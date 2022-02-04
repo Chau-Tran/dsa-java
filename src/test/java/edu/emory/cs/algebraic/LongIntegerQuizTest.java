@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.emory.cs.utils;
+package edu.emory.cs.algebraic;
 
-import edu.emory.cs.algebraic.LongInteger;
-import edu.emory.cs.algebraic.LongIntegerQuiz;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
