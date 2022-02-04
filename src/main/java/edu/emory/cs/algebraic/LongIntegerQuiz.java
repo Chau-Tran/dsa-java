@@ -14,16 +14,13 @@ public class LongIntegerQuiz extends LongInteger {
         int m = Math.max(digits.length, n.digits.length);
         byte[] result = new byte[m + 1];
 
-        //same absolute values, just different signs, would cancel out and yield 0
-        if (compareAbs(n) == 0) {
-            result[0] = 0;
-        }
-        //if THIS number is less than N number, copy the greater value, N, into result and subtract THIS.
-        else if(compareAbs(n) < 0){
+        // this < n
+        if(compareAbs(n) < 0){
 
+            // n goes on top
             System.arraycopy(n.digits, 0, result, 0, n.digits.length);
 
-            //subtract THIS from n
+            //subtract this from n
             for(int i = 0; i < digits.length; i++) {
                 result[i] -= digits[i];
                 if (result[i] < 0) {
@@ -32,43 +29,58 @@ public class LongIntegerQuiz extends LongInteger {
                 }
             }
 
-            //top number, N, is negative, and a smaller, positive THIS number is getting subtracted, result will still yield a negative
-            if(n.sign == Sign.NEGATIVE){
-                sign = Sign.NEGATIVE;
+            //commits answer
+            int z = 0;
+            for (byte b : result) {
+                if (b == 0) {
+                    z++;
+                }
             }
-            //else if the top number, N, is a large, positive number, and a smaller, negative THIS number is being subtracted, the result will still be positive
-            else{
-                sign = Sign.POSITIVE;
-            }
+            digits = result[m] == 0 ? Arrays.copyOf(result, result.length-z) : result;
 
-            digits = result[m] == 0 ? Arrays.copyOf(result, m) : result;
+            //if this is pos, result is neg
+            sign = isPositive() ? Sign.NEGATIVE : Sign.POSITIVE;
+
         }
 
-        //else if THIS number is greater than N number, copy the greater value, THIS, into result and subtract N.
-        else{
+        // this > n
+        else if (compareAbs(n) > 0){
 
+            // this goes on top
             System.arraycopy(digits, 0, result, 0, digits.length);
 
-            //subtract N from THIS
-            for(int i = 0; i < n.digits.length; i++){
+            //subtract n from this
+            for (int i = 0; i < n.digits.length; i++) {
                 result[i] -= n.digits[i];
-                if(result[i]<0){
+                if (result[i] < 0) {
                     result[i] += 10;
-                    result[i+1] -= 1;
+                    result[i + 1] -= 1;
                 }
             }
 
-            //if top number, THIS, is negative, result would be negative bc a large negative subtracted by a smaller positive yields a negative
-            if(this.sign == Sign.NEGATIVE){
-                sign = Sign.NEGATIVE;
+            //commits answer
+            int z = 0;
+            for (byte b : result) {
+                if (b == 0) {
+                    z++;
+                }
             }
-            //if top number, THIS, is positive, then the bottom number, N, is negative. However, since the larger number THIS is positive, getting subtracted by a smaller N number, will still yield a positive result
-            else {
-                sign = Sign.POSITIVE;
-            }
+            digits = result[m] == 0 ? Arrays.copyOf(result, result.length-z) : result;
 
-            digits = result[m] == 0 ? Arrays.copyOf(result, m) : result;
 
+            //if this is pos, result is pos
+            sign = isPositive() ? Sign.POSITIVE : Sign.NEGATIVE;
+
+
+        }
+
+        // |this| == |n|
+        else{
+
+            //commits answer
+            digits = new byte[]{0};
+
+            sign = isPositive() ? Sign.POSITIVE : Sign.NEGATIVE;
         }
     }
 }

@@ -90,6 +90,7 @@ public class LongInteger extends SignedNumeral<LongInteger> implements Comparabl
                 result[i] -= 10;
                 result[i + 1] += 1;
             }
+
         }
 
         // set this.digits
