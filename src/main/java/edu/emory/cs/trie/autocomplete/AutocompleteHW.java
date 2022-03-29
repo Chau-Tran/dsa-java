@@ -15,25 +15,84 @@
  */
 package edu.emory.cs.trie.autocomplete;
 
-import java.util.List;
+import edu.emory.cs.trie.TrieNode;
 
+import java.util.*;
 
 /**
  * @author Jinho D. Choi ({@code jinho.choi@emory.edu})
  */
 public class AutocompleteHW extends Autocomplete<List<String>> {
+
     public AutocompleteHW(String dict_file, int max) {
         super(dict_file, max);
     }
 
     @Override
     public List<String> getCandidates(String prefix) {
-        // TODO: to be updated
-        return List.of("dummy", "candidate");
+
+        String pre = prefix.trim();
+        List<String> candidates = new ArrayList<>();
+        TrieNode<List<String>> node = getRoot();
+        StringBuffer current = new StringBuffer();
+
+        if(find(pre).getValue() == null) {
+            for (char letter : pre.toCharArray()) {
+                node = node.getChild(letter);
+                if (node == null) {
+                    return candidates;
+                }
+                current.append(letter);
+            }
+
+            generateCand(node, candidates, current);
+
+            Collections.sort(candidates, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    if (o1.length()!=o2.length()) return o1.length()-o2.length();
+                    return o1.compareTo(o2);
+                }
+            });
+
+            find(pre).setValue(candidates);
+        }
+        else{
+            candidates = find(pre).getValue();
+        }
+
+        if(candidates.size() > getMax()){
+            candidates = candidates.subList(0, getMax());}
+
+        return candidates;
+    }
+
+    public void generateCand(TrieNode<List<String>> node, List<String> candidates, StringBuffer current) {
+        if (node.isEndState()) {candidates.add(current.toString());}
+        if (!node.hasChildren()) return;
+        for (TrieNode child : node.getChildrenMap().values()) {
+            generateCand(child, candidates, current.append(child.getKey()));
+            current.setLength(current.length() - 1);
+        }
     }
 
     @Override
     public void pickCandidate(String prefix, String candidate) {
-        // TODO: to be filled
+
+        String pre = prefix;
+
+        List<String> prefixList;
+
+        if(find(pre).getValue() == null) {prefixList = getCandidates(pre);}
+        else {prefixList = find(pre).getValue();}
+
+        if(prefixList.contains(candidate)) {
+            prefixList.remove(candidate);
+            prefixList.add(0, candidate);
+        }
+        else{
+            throw new NoSuchElementException();
+        }
+        find(pre).setValue(prefixList);
     }
 }
