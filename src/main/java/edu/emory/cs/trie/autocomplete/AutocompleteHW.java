@@ -86,13 +86,23 @@ public class AutocompleteHW extends Autocomplete<List<String>> {
         if(find(pre).getValue() == null) {prefixList = getCandidates(pre);}
         else {prefixList = find(pre).getValue();}
 
-        if(prefixList.contains(candidate)) {
-            prefixList.remove(candidate);
-            prefixList.add(0, candidate);
+        if(!prefixList.contains(candidate)) {
+            put(candidate, getCandidates(pre));
         }
-        else{
-            throw new NoSuchElementException();
-        }
+        prefixList.remove(candidate);
+        prefixList.add(0, candidate);
         find(pre).setValue(prefixList);
     }
+
+//    public static void main(String[] args) {
+//        final String dict_file = "src/main/resources/dict.txt";
+//        final int max = 20;
+//
+//        Autocomplete<?> ac = new AutocompleteHW(dict_file, max);
+//        System.out.println(ac.getCandidates("hi"));
+//        ac.pickCandidate("hi", "sup");
+//        System.out.println(ac.getCandidates("hi"));
+//
+//    }
+
 }
