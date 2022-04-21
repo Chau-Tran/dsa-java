@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2020 Emory University
  *
@@ -23,7 +24,6 @@ import java.util.*;
  * @author Jinho D. Choi ({@code jinho.choi@emory.edu})
  */
 public class AutocompleteHW extends Autocomplete<List<String>> {
-
     public AutocompleteHW(String dict_file, int max) {
         super(dict_file, max);
     }
@@ -36,29 +36,33 @@ public class AutocompleteHW extends Autocomplete<List<String>> {
         TrieNode<List<String>> node = getRoot();
         StringBuffer current = new StringBuffer();
 
-        if(find(pre).getValue() == null) {
-            for (char letter : pre.toCharArray()) {
-                node = node.getChild(letter);
-                if (node == null) {
-                    return candidates;
-                }
-                current.append(letter);
-            }
-
-            generateCand(node, candidates, current);
-
-            Collections.sort(candidates, new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
-                    if (o1.length()!=o2.length()) return o1.length()-o2.length();
-                    return o1.compareTo(o2);
-                }
-            });
-
-            find(pre).setValue(candidates);
+        if(find(pre) == null) { // prefix doesnt exist
+            put(pre, null);
+            find(pre).setEndState(false);
+            return candidates;
         }
-        else{
-            candidates = find(pre).getValue();
+        else { // prefix exists
+            if (find(pre).getValue() == null) { // prefix doesnt have cand list
+
+                for (char letter : pre.toCharArray()) {
+                    node = node.getChild(letter);
+                    if (node == null) {
+                        return candidates;
+                    }
+                    current.append(letter);
+                }
+
+                generateCand(node, candidates, current);
+
+                candidates.sort((o1, o2) -> {
+                    if (o1.length() != o2.length()) return o1.length() - o2.length();
+                    return o1.compareTo(o2);
+                });
+                find(pre).setValue(candidates);
+            }
+            else{ // prefix has cand list
+                candidates = find(pre).getValue();
+            }
         }
 
         if(candidates.size() > getMax()){
@@ -79,30 +83,59 @@ public class AutocompleteHW extends Autocomplete<List<String>> {
     @Override
     public void pickCandidate(String prefix, String candidate) {
 
-        String pre = prefix;
-
+        String pre = prefix.trim();
         List<String> prefixList;
 
-        if(find(pre).getValue() == null) {prefixList = getCandidates(pre);}
-        else {prefixList = find(pre).getValue();}
-
-        if(!prefixList.contains(candidate)) {
-            put(candidate, getCandidates(pre));
+        if(get(candidate) == null){ // candidate is a prefix, not a word
+            if(find(candidate) != null){
+                put(candidate, find(candidate).getValue());
+            }
+            else{
+                put(candidate, null);
+            }
         }
-        prefixList.remove(candidate);
-        prefixList.add(0, candidate);
-        find(pre).setValue(prefixList);
+
+        if(find(pre) != null) { // prefix found
+            if (find(pre).getValue() == null) prefixList = getCandidates(pre); // prefix doesnt have cand list
+            else prefixList = find(pre).getValue(); // prefix has cand list
+
+            if (!prefixList.contains(candidate)) { // cand list of prefix doesnt have cand
+                put(candidate, null);
+            }
+
+            prefixList.remove(candidate);
+            prefixList.add(0, candidate);
+            find(pre).setValue(prefixList);
+        }
+        else { // prefix does not exist
+            getCandidates(pre);
+            pickCandidate(pre, candidate);
+        }
     }
 
-//    public static void main(String[] args) {
-//        final String dict_file = "src/main/resources/dict.txt";
-//        final int max = 20;
+    public static void main(String[] args) {
+        final String dict_file = "src/main/resources/dict.txt";
+        final int max = 5;
+
+        Autocomplete<?> ac = new AutocompleteHW(dict_file, max);
+
+//        System.out.println(ac.getCandidates("nonsubs"));
+//        ac.pickCandidate("nonsubs", "nonsubsidi");
+////        System.out.println(ac.getCandidates("nonsubs"));
 //
-//        Autocomplete<?> ac = new AutocompleteHW(dict_file, max);
-//        System.out.println(ac.getCandidates("hi"));
-//        ac.pickCandidate("hi", "sup");
-//        System.out.println(ac.getCandidates("hi"));
+//        ac.pickCandidate("nonsubsid", "nonsubsidy");
+////        System.out.println(ac.getCandidates("nonsubsid"));
 //
-//    }
+//        ac.pickCandidate("nonsubs", "nonsubsidz");
+//        System.out.println(ac.getCandidates("nonsubsid"));
+
+//        System.out.println(ac.getCandidates("jinho"));
+        System.out.println(ac.getCandidates("_"));
+        ac.pickCandidate("_", "_jinho");
+        System.out.println(ac.getCandidates("_"));
+//        System.out.println(ac.getCandidates("jinho"));
+
+
+    }
 
 }
